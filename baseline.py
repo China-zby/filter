@@ -22,11 +22,9 @@ def get_motion_mask(fg_mask, min_thresh=0, kernel=np.array((9,9), dtype=np.uint8
     else:
         motion_mask=fg_mask
         return motion_mask
-    
     # morphological operations
     motion_mask = cv2.morphologyEx(motion_mask, cv2.MORPH_OPEN, kernel, iterations=1)
     motion_mask = cv2.morphologyEx(motion_mask, cv2.MORPH_CLOSE, kernel, iterations=1)
-
     return motion_mask
 
 def calculate(fg_mask,image):
@@ -34,21 +32,17 @@ def calculate(fg_mask,image):
     color_foreground = cv2.bitwise_and(image, image, mask=motion_mask)
     color_foreground=cv2.cvtColor(color_foreground, cv2.COLOR_BGR2RGB)
     contours, _ = cv2.findContours(motion_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
     # 初始化一个累加直方图
     cumulative_histogram = np.zeros(256)
     hists=[]
-
     # 假设 contours 是你通过 findContours 得到的轮廓列表
     # 假设 image 是原始图像
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
-        cropped_region = image[y:y+h, x:x+w]
-        
+        cropped_region = image[y:y+h, x:x+w]     
         # 计算裁剪区域的颜色直方图
         histogram = calculate_histogram(cropped_region)
         hists.append(histogram)
-        
         # 累加到综合直方图中
         cumulative_histogram += histogram
     return cumulative_histogram,hists
@@ -65,17 +59,7 @@ def main():
     query_inputs = glob.glob(folder_path + "/*")
     query_num=20
     frame_count=0
-    
-    start=time.time()
     cap = cv2.VideoCapture(video)
-    while(1):
-        if frame_count > 10000:
-            break
-        ret, image = cap.read()
-        # update the background model and obtain foreground mask
-        frame_count=frame_count+1
-        fg_mask = backSub.apply(image)
-        # 将掩码应用于原始图像以获得彩色前景
     frame_count=0
     hists=[]
     count=[]
@@ -89,24 +73,19 @@ def main():
         min.append(query_frame-frame_len//2)
         max.append(query_frame+frame_len//2)
     print("get base bg time:")
-    print(time.time()-start)
     gen_bg=0
     his_time=0
     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
     recall=[]
     recall = [0] * query_num
     while(1):
-
-        start=time.time()
         ret, image = cap.read()
         if not ret:
             break
         # update the background model and obtain foreground mask
         frame_count=frame_count+1
         fg_mask = backSub.apply(image)
-        gen_bg=gen_bg+time.time()-start
         # 将掩码应用于原始图像以获得彩色前景
-        start=time.time()
         try:
             cumulative_histogram,histss=calculate(fg_mask,image)
         except Exception as e:
@@ -125,11 +104,7 @@ def main():
         re=recall[i]/(max[i]-min[i])
         print(query_inputs[i])
         print(re)
-    # 分离数据为两个列表
-    print("fore_bg:")
-    print(gen_bg)
-    print("calculate:")
-    print(his_time)
+
     
 if __name__ == "__main__":
     main()
