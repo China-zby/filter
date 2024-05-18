@@ -1,7 +1,5 @@
-import os
 import cv2
 import numpy as np
-import time
 import glob
 
 def calculate_histogram(image, bins=256):
@@ -86,6 +84,7 @@ def main():
             similarity = compare_histograms(cumulative_histogram, hists[i])
             if similarity<standard_threshold:
                 count[i]=count[i]+1
+    # 打印每个查询过滤后剩余的帧数
     print(count)
 
 
