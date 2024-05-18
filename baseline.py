@@ -50,6 +50,7 @@ def main():
     # 输入你的视频和查询图片文件夹的路径
     folder_path='' 
     video = ''
+    standard_threshold = 
     # get background subtractor
     sub_type = 'MOG2' # 'MOG2'
     if sub_type == "MOG2":
@@ -96,7 +97,7 @@ def main():
         for i in range(query_num):
             # 比较直方图
             similarity = compare_histograms(cumulative_histogram, hists[i])
-            if similarity<37:
+            if similarity<standard_threshold:
                 count[i]=count[i]+1
                 if(frame_count>min[i] and frame_count<max[i]):
                     recall[i]=recall[i]+1
