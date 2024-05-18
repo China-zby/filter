@@ -47,8 +47,9 @@ def calculate(fg_mask,image):
         cumulative_histogram += histogram
     return cumulative_histogram,hists
 def main():
-    folder_path='/mnt/data_hdd1/zby/jackson_town/datasets/query_square_test'
-    video = '/home/zby/sigmod/video/square_640.mp4'
+    # 输入你的视频和查询图片文件夹的路径
+    folder_path='' 
+    video = ''
     # get background subtractor
     sub_type = 'MOG2' # 'MOG2'
     if sub_type == "MOG2":
