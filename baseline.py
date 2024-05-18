@@ -50,7 +50,7 @@ def main():
     # 输入你的视频和查询图片文件夹的路径
     folder_path='' 
     video = ''
-    standard_threshold = 
+    standard_threshold = 40
     # get background subtractor
     sub_type = 'MOG2' # 'MOG2'
     if sub_type == "MOG2":
@@ -59,32 +59,20 @@ def main():
     else:
         backSub = cv2.createBackgroundSubtractorKNN(dist2Threshold=800, detectShadows=True)    
     query_inputs = glob.glob(folder_path + "/*")
-    query_num=20
+    query_num=len(query_inputs)
     frame_count=0
     cap = cv2.VideoCapture(video)
     frame_count=0
     hists=[]
     count=[]
-    min=[]
-    max=[]
     count = [0] * query_num
     for i in range(query_num):
         hists.append(calculate_histogram(cv2.imread(query_inputs[i])))
-        query_frame=int(os.path.basename(query_inputs[i]).split('.')[0].split('_')[-1].split('-')[0])
-        frame_len=int(os.path.basename(query_inputs[i]).split('.')[0].split('_')[-3])
-        min.append(query_frame-frame_len//2)
-        max.append(query_frame+frame_len//2)
-    print("get base bg time:")
-    gen_bg=0
-    his_time=0
     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-    recall=[]
-    recall = [0] * query_num
     while(1):
         ret, image = cap.read()
         if not ret:
             break
-        # update the background model and obtain foreground mask
         frame_count=frame_count+1
         fg_mask = backSub.apply(image)
         # 将掩码应用于原始图像以获得彩色前景
@@ -93,20 +81,13 @@ def main():
         except Exception as e:
             print(frame_count)
             continue
-        his_time=his_time+time.time()-start
         for i in range(query_num):
             # 比较直方图
             similarity = compare_histograms(cumulative_histogram, hists[i])
             if similarity<standard_threshold:
                 count[i]=count[i]+1
-                if(frame_count>min[i] and frame_count<max[i]):
-                    recall[i]=recall[i]+1
     print(count)
-    for i in range(query_num):
-        re=recall[i]/(max[i]-min[i])
-        print(query_inputs[i])
-        print(re)
 
-    
+
 if __name__ == "__main__":
     main()
